@@ -142,6 +142,25 @@ export default function CodeEditor({ forwardedRef }: CodeEditorProps) {
     }
   }, []);
 
+  const uploadImage = (image: File, onSuccess: (imageUrl: string) => void, onError: (errorMessage: string) => void) => {
+    try {
+      if (image.type && !image.type.startsWith('image/')) {
+        throw new Error(`This File type is ${image.type}. Please upload an image file.`);
+      } else {
+        const reader = new FileReader();
+
+        reader.addEventListener('load', ({ target }) => {
+          if (target && typeof target.result === 'string') {
+            onSuccess(target.result);
+          }
+        });
+        reader.readAsDataURL(image);
+      }
+    } catch (error) {
+      onError(String(error));
+    }
+  };
+
   useEffect(() => {
     for (const [id, peer] of Object.entries(peers)) {
       if (cursorMapRef.current.has(id) && peer.status === ConnectionStatus.Disconnected) {
@@ -327,6 +346,8 @@ export default function CodeEditor({ forwardedRef }: CodeEditorProps) {
         'fullscreen',
       ],
       unorderedListStyle: '-',
+      uploadImage: true,
+      imageUploadFunction: uploadImage,
       status: false,
       shortcuts: {
         toggleUnorderedList: null,
